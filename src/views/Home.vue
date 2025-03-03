@@ -20,7 +20,7 @@
               <div class="ClassificationTitle">{{ $t("type1") }}</div>
               <Select class="ClassificationSelect" :popper-append-to-body="false" popper-class="dataClass" v-model="categoryId1" @change="handSelectChange1" :placeholder="$t('pleaseSelect')">
                 <Option
-                  style="height: 0.3rem; line-height: 0.3rem; font-size: 12px;padding: 0 0.13rem;"
+                  style="height: 34px; line-height: 34px; font-size: 12px;padding: 0 0.13rem;"
                   v-for="item in categoryList1"
                   :key="item.id"
                   :label="item.name"
@@ -28,7 +28,7 @@
                 </Option>
               </Select>
             </div>
-            <div class="Classification">
+            <div class="Classification" v-if="isShowSecondType">
               <div class="ClassificationTitle">{{ $t("type2") }}</div>
               <!-- <select class="ClassificationSelect">
                 <option value="" disabled selected hidden>请选择</option>
@@ -36,7 +36,7 @@
               </select> -->
               <Select class="ClassificationSelect" :popper-append-to-body="false" popper-class="dataClass" v-model="categoryId2" @change="handSelectChange2" :placeholder="$t('pleaseSelect')">
                 <Option
-                  style="height: 0.3rem; line-height: 0.3rem;font-size: 12px; padding: 0 0.13rem;"
+                  style="height: 34px; line-height: 34px; font-size: 12px;padding: 0 0.13rem;"
                   v-for="item in categoryList2"
                   :key="item.id"
                   :label="item.name"
@@ -51,7 +51,7 @@
               <div class="searchBtn" @click="searchClick">{{ $t("search") }}</div>
             </div>
             <div class="current" v-show="totalItems != 0">
-              <Pagination v-model="currentPage" :total-items="totalItems" :items-per-page="itemsPerPage">
+              <!-- <Pagination v-model="currentPage" :total-items="totalItems" :items-per-page="itemsPerPage">
                 <template #prev-text>
                   <Icon name="arrow-left" />
                 </template>
@@ -59,6 +59,12 @@
                   <Icon name="arrow" />
                 </template>
                 <template #page="{ text }">{{ text }}</template>
+              </Pagination> -->
+              <Pagination
+                small
+                layout="prev, pager, next"
+                :page-size="5"
+                :total="totalItems">
               </Pagination>
             </div>
             <div class="contentList" v-if="searchList">
@@ -86,8 +92,8 @@
 
 <script>
 import Vue from 'vue'
-import { Swipe, SwipeItem, Lazyload, Pagination, Icon  } from "vant"
-import { Select, Option } from 'element-ui';
+import { Swipe, SwipeItem, Lazyload, Icon  } from "vant"
+import { Select, Option, Pagination } from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import Banner from "components/Banner"
 import { getAdvertising, getPosterList, getCategoryList } from "@/api/user"
@@ -113,6 +119,7 @@ export default {
       bannerImages: [],
       searchList:[],
       showAdvert: false,
+      isShowSecondType: false,
       searchTxt:"",
       totalItems:"0",
       currentPage: 1,
@@ -256,6 +263,7 @@ export default {
       console.log("获取类别信息成功", res.data.list);
       const {list} = res.data
       this.categoryList2 = list
+      this.isShowSecondType = true
     })
     },
     handSelectChange2 (val) {
@@ -371,6 +379,10 @@ html{
     padding: 0;
     font-size: 6px;
   }
+  ::v-deep .el-select-dropdown__wrap{
+    max-height: 274px;
+    overflow-y: auto !important;
+  }
   .main {
     position: relative;
     background-color: #fff;
@@ -419,14 +431,14 @@ html{
           display: flex;
           flex-direction: column;
           justify-content: space-around;
-          width: 100%;
-          height: 99%;
-          height: 15%;
+          width: 99.8%;
+          padding: 10px 0;
+          max-height: 15%;
           border: 1px solid #797979;
           .Classification{
             display: flex;
             align-items: center;
-            height: 40%;
+            height: 30px;
             .ClassificationTitle{
               width: 18%;
               text-align: center;
@@ -456,8 +468,11 @@ html{
               justify-content: center;
               align-items: center;
               width: 19%;
+              max-width: 19%;
               height: 123%;
               margin-left: 0.1%;
+              color: #909399;
+              background-color: #F5F7FA;
               border: 1px solid #797979;
               border-radius: 7%;
             }
@@ -488,6 +503,7 @@ html{
           .current{
             margin-top: 5%;
             height: 10%;
+            text-align: center;
             font-size: 1rem;
           }
         }
