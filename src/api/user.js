@@ -11,6 +11,8 @@ export function login (data) {
     }
     // data: JSON.stringify(data)
   })
+
+  
 }
 
 export function getAdvertising (data) {
