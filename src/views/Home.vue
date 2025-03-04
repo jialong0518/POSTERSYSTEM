@@ -50,7 +50,7 @@
               <input class="ipt" v-model="searchTxt" :placeholder="$t('placeholder')" />
               <div class="searchBtn" @click="searchClick">{{ $t("search") }}</div>
             </div>
-            <div class="current" v-show="totalItems != 0">
+            <div class="current" v-show="totalItems != 0 && isShowPage">
               <!-- <Pagination v-model="currentPage" :total-items="totalItems" :items-per-page="itemsPerPage">
                 <template #prev-text>
                   <Icon name="arrow-left" />
@@ -62,8 +62,11 @@
               </Pagination> -->
               <Pagination
                 small
-                layout="prev, pager, next"
-                :page-size="5"
+                layout="prev, pager, next, jumper"
+                :current-page.sync="currentPage"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :page-size="6"
                 :total="totalItems">
               </Pagination>
             </div>
@@ -82,6 +85,17 @@
                   <div>{{ item.title }}</div>
                 </div>
               </div>
+            </div>
+            <div class="current" v-show="totalItems != 0 && !isShowPage">
+              <Pagination
+                small
+                layout="prev, pager, next, jumper"
+                :current-page.sync="currentPage"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :page-size="6"
+                :total="totalItems">
+              </Pagination>
             </div>
           </div>
         </div>
@@ -133,6 +147,7 @@ export default {
       categoryId1: '',
       categoryId2: '',
       meeting_id: 0,
+      isShowPage: false
     }
   },
   computed: {},
@@ -180,8 +195,8 @@ export default {
       this.categoryList1 = list
     })
     getPosterList({
-      "page": 1, //页码
-      "pageSize": 20, //每页记录数
+      "page": this.currentPage, //页码
+      "pageSize": 6, //每页记录数
       "category_id": this.categoryId2 !== '' ? this.categoryId2 : (this.categoryId1 !== '' ? this.categoryId1 : 0),//类别id,0全部
       "status": "已开启", //已开启（前台写死），已关闭
       "meeting_id": this.meeting_id, //会议id，必填
@@ -189,10 +204,10 @@ export default {
       "uid": 1
     }).then(res => {
       console.log("搜索数据", res);
-      const {list, pagesum } = res.data
+      const {list,datacount, pagesum } = res.data
       this.searchList = list
-      this.totalItems = pagesum
-      this.lockDuration = list&&list[0].lock_duration || 0
+      this.totalItems = datacount
+      this.lockDuration = list && list[0].lock_duration || 0
       this.monitorInactivity()
     })
   },
@@ -204,6 +219,16 @@ export default {
     this.handResize()
   },
   methods: {
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`);
+      this.currentPage = val; // 改变当前页码
+      this.searchClick()
+    },
+    handleSizeChange(val) {
+        console.log(`每页 ${val} 条`);
+        this.pageSize = val; // 改变每页记录数
+        this.searchClick()
+      },
     resetTimer() {
     if (this.inactivityTimeout) {
       for (let i = 0; i < this.inactivityTimeout+ 1000; i++) {
@@ -242,10 +267,12 @@ export default {
         // this.width = Math.min(this.width,1024)
         this.height = this.height
         this.width = this.height * (9 / 16)
+        this.isShowPage = true
         console.log('电脑设备: 9:16比例', this.width, this.height)
       } else {
         this.height = window.innerHeight
         console.log('手机或平板: 全屏展示', this.width, this.height)
+        this.isShowPage = false
       }
     },
     handSelectChange1 (val) {
@@ -277,8 +304,8 @@ export default {
       //   return Toast("请输入搜索内容");
       // }
       getPosterList({
-      "page": 1, //页码
-      "pageSize": 20, //每页记录数
+      "page": this.currentPage, //页码
+      "pageSize": 6, //每页记录数
       "category_id": this.categoryId2 !== '' ? this.categoryId2 : (this.categoryId1 !== '' ? this.categoryId1 : 0),//类别id,0全部
       "status": "已开启", //已开启（前台写死），已关闭
       "meeting_id": this.meeting_id, //会议id，必填
@@ -286,9 +313,9 @@ export default {
       "uid": 1
     }).then(res => {
       console.log("搜索数据", res);
-      const {list, pagesum } = res.data
+      const {list,datacount, pagesum } = res.data
       this.searchList = list
-      this.totalItems = pagesum
+      this.totalItems = datacount
       this.lockDuration =  list&&list[0].lock_duration || 0
     })
     },
@@ -332,7 +359,7 @@ html{
   // height: 100vh;
   width: 100vw;
   background-color: #f5f5f5;
-  
+
   ::v-deep .van-pagination__item--active{
     background-color: #fff;
     color: #1989fa;
@@ -360,7 +387,7 @@ html{
   }
   ::v-deep .el-input__inner{
     height: 100%;
-    border: 1px solid #797979;
+    // border: 1px solid #797979;
   }
   ::v-deep .el-input__suffix{
     display: flex;
@@ -382,6 +409,10 @@ html{
   ::v-deep .el-select-dropdown__wrap{
     max-height: 274px;
     overflow-y: auto !important;
+  }
+  ::v-deep .el-input__inner {
+    height: 0.58667rem;
+    font-size: 10px;
   }
   .main {
     position: relative;
@@ -409,14 +440,14 @@ html{
         position: absolute;
         top: 7px;
         right: 7px;
-        width: 43px;
-        height: 14px;
-        padding: 5px;
+        // width: 43px;
+        // height: 14px;
+        padding: 12px 20px;
         font-size: 12px;
         line-height: 14px;
         text-align: center;
         color: #fff;
-        background-color: #223149;
+        background-color: rgba(0, 0, 0, 0.8);
         border-radius: 3px;
         z-index: 9;
       }
@@ -434,7 +465,11 @@ html{
           width: 99.8%;
           padding: 10px 0;
           max-height: 15%;
-          border: 1px solid #797979;
+          // border: 1px solid #DCDFE6;
+            margin-top: 10px;
+            border-radius: 2%;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+            box-sizing: border-box;
           .Classification{
             display: flex;
             align-items: center;
@@ -452,39 +487,61 @@ html{
           }
         }
         .selectContent{
-          height: 78.5%;
-          padding: 5%;
-          border: 1px solid #797979;
+          // height: 78.5%;
+          // padding: 5%;
+          padding: 0 20px;
+          box-sizing: border-box;
           .search{
             display: flex;
             align-items: center;
-            height: 4%;
+            height: 25px;
+            margin-top: 10px;
+            // margin-bottom: 15px;
+            // border: 1px solid #DCDFE6;
             .ipt{
               width: 80%;
               height: 100%;
+              // border: none;
+              border: 1px solid #DCDFE6;
             }
             .searchBtn{
               display: flex;
               justify-content: center;
               align-items: center;
-              width: 19%;
+              width: 75px;
               max-width: 19%;
-              height: 123%;
+              height: 113%;
               margin-left: 0.1%;
               color: #909399;
               background-color: #F5F7FA;
-              border: 1px solid #797979;
+              border: 1px solid #DCDFE6;
               border-radius: 7%;
             }
           }
           .contentList{
-            max-height: 80%;
-            overflow-y: auto;
+            margin-top: 15px;
+            height: 93%;
+            max-height: 93%;
+            // overflow-y: auto;
             .contentListItems{
-              margin-top: 2%;
-              padding-top: 4%;
-              border: 1px solid #797979;
-              box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
+              // margin-top: 2%;
+              // margin-bottom: 20px;
+              // padding-top: 4%;
+              // border: 1px solid #797979;
+              // box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
+
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              line-height: 1.5;
+              box-shadow: 0 0 10px 1px rgba(72, 118, 255, .3);
+              border-radius: 5px;
+              padding: 5px 10px;
+              box-sizing: border-box;
+              margin-bottom: 15px;
+              width: 100%;
+              cursor: pointer;
+              // 11
               .public{
                 display: flex;
                 div {
@@ -501,10 +558,12 @@ html{
             }
           }
           .current{
-            margin-top: 5%;
-            height: 10%;
+            display: flex;
+            margin-top: 10px;
+            height: 17%;
             text-align: center;
-            font-size: 1rem;
+            font-size: 12px;
+            align-items: center;
           }
         }
     }

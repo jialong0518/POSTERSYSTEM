@@ -1,12 +1,13 @@
 <template>
   <div class="container">
     <div class="detailsPage" :style="{ width: width + 'px', height: height + 'px' }">
-      <div class="backBtn" @click="goBack">
+      <!-- <div class="backBtn" @click="goBack">
         <Icon name="arrow-left" />{{ $t("back") }}
-      </div>
+      </div> -->
+      <div class="backBtn" @click="goBack">{{ $t("back") }}</div>
       <div class="content-wrapper">
-        <v-touch 
-          class="content" 
+        <v-touch
+          class="content"
           ref="zoomContainer"
           @pinchstart="onPinchStart"
           @pinch="onPinch"
@@ -87,12 +88,12 @@ export default {
   mounted() {
     window.addEventListener('resize', this.handResize)
     this.handResize()
-    
+
     // 添加双击缩放事件
     if (this.$refs.zoomContainer && this.$refs.zoomContainer.$el) {
       this.$refs.zoomContainer.$el.addEventListener('dblclick', this.handleDoubleClick)
     }
-    
+
     // 添加鼠标滚轮缩放
     if (this.$refs.zoomContainer && this.$refs.zoomContainer.$el) {
       this.$refs.zoomContainer.$el.addEventListener('wheel', this.handleWheel, { passive: false })
@@ -112,7 +113,7 @@ export default {
         this.height = window.innerHeight
         console.log('手机或平板: 全屏展示', this.width, this.height)
       }
-      
+
       // 重置缩放和平移
       this.resetZoomAndPan()
     },
@@ -126,10 +127,10 @@ export default {
     onPinch(e) {
       // 计算新的缩放值
       let newScale = this.lastScale * e.scale
-      
+
       // 限制缩放范围
       newScale = Math.max(this.minScale, Math.min(newScale, this.maxScale))
-      
+
       this.scale = newScale
     },
     onPinchEnd() {
@@ -137,7 +138,7 @@ export default {
       if (this.scale < this.minScale) {
         this.scale = this.minScale
       }
-      
+
       // 如果缩放回到原始大小，重置平移
       if (this.scale === this.minScale) {
         this.panX = 0
@@ -160,14 +161,14 @@ export default {
     },
     onPanEnd() {
       this.isPanning = false
-      
+
       // 限制平移范围，防止内容被拖出视图太远
       const maxPanX = (this.scale - 1) * this.width / 2
       const maxPanY = (this.scale - 1) * this.height / 2
-      
+
       this.panX = Math.max(-maxPanX, Math.min(this.panX, maxPanX))
       this.panY = Math.max(-maxPanY, Math.min(this.panY, maxPanY))
-      
+
       // 如果缩放回到原始大小，重置平移
       if (this.scale === this.minScale) {
         this.panX = 0
@@ -177,19 +178,19 @@ export default {
     // 双击缩放
     handleDoubleClick(e) {
       e.preventDefault()
-      
+
       if (this.scale > this.minScale) {
         // 如果已经放大，双击恢复原始大小
         this.resetZoomAndPan()
       } else {
         // 如果是原始大小，双击放大到2倍
         this.scale = 2
-        
+
         // 计算点击位置为缩放中心
         const rect = this.$refs.zoomContainer.$el.getBoundingClientRect()
         const offsetX = e.clientX - rect.left
         const offsetY = e.clientY - rect.top
-        
+
         // 调整平移以使点击位置成为缩放中心
         this.panX = (this.width / 2 - offsetX) * (this.scale - 1)
         this.panY = (this.height / 2 - offsetY) * (this.scale - 1)
@@ -198,31 +199,31 @@ export default {
     // 鼠标滚轮缩放
     handleWheel(e) {
       e.preventDefault()
-      
+
       // 确定缩放方向和缩放步长
       const delta = e.deltaY < 0 ? 0.2 : -0.2
       let newScale = this.scale + delta
-      
+
       // 限制缩放范围
       newScale = Math.max(this.minScale, Math.min(newScale, this.maxScale))
-      
+
       // 如果缩放值没有变化，不做任何处理
       if (newScale === this.scale) return
-      
+
       // 计算鼠标位置为缩放中心
       const rect = this.$refs.zoomContainer.$el.getBoundingClientRect()
       const offsetX = e.clientX - rect.left
       const offsetY = e.clientY - rect.top
-      
+
       // 计算新的平移值，使鼠标位置成为缩放中心
       const scaleFactor = newScale / this.scale
       const newPanX = offsetX - (offsetX - this.panX) * scaleFactor
       const newPanY = offsetY - (offsetY - this.panY) * scaleFactor
-      
+
       this.scale = newScale
       this.panX = newPanX
       this.panY = newPanY
-      
+
       // 如果缩放回到原始大小，重置平移
       if (this.scale === this.minScale) {
         this.resetZoomAndPan()
@@ -237,7 +238,7 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.handResize)
-    
+
     // 移除事件监听器
     if (this.$refs.zoomContainer && this.$refs.zoomContainer.$el) {
       this.$refs.zoomContainer.$el.removeEventListener('dblclick', this.handleDoubleClick)
@@ -266,16 +267,12 @@ export default {
       position: absolute;
       top: 10px;
       left: 10px;
-      color: #333;
-      background-color: rgba(255, 255, 255, 0.8);
-      padding: 5px 10px;
-      border-radius: 4px;
+      color: #3182bd;
       cursor: pointer;
       font-size: 14px;
       z-index: 100;
       display: flex;
       align-items: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .content-wrapper {
